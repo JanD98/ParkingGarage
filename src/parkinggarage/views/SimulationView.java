@@ -1,21 +1,20 @@
-package parkinggarage;
+package parkinggarage.views;
 
 import com.sun.istack.internal.Nullable;
-import javafx.event.*;
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.HBox;
 import parkinggarage.controllers.SettingsController;
+import parkinggarage.Simulation;
 import parkinggarage.models.Car;
 import parkinggarage.models.Location;
-import parkinggarage.views.CreditsScreen;
-import parkinggarage.views.StatisticsScreen;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 
 public class SimulationView extends JFrame implements KeyListener {
@@ -34,11 +33,11 @@ public class SimulationView extends JFrame implements KeyListener {
     private Car[][][] cars;
     private Simulation simulation;
 
-    public SimulationView(Simulation simulation, int numberOfFloors, int numberOfRows, int numberOfPlaces) {
+    public SimulationView(Simulation simulation, int numberOfFloors, int numberOfRows, int reservedFloor, int numberOfPlaces) {
         this.simulation = simulation;
         this.numberOfFloors = numberOfFloors;
         this.numberOfRows = numberOfRows;
-        this.reservedFloor = 1;
+        this.reservedFloor = reservedFloor;
         this.numberOfPlaces = numberOfPlaces;
         this.numberOfOpenSpots = numberOfFloors * numberOfRows * numberOfPlaces;
         cars = new Car[numberOfFloors][numberOfRows][numberOfPlaces];
@@ -64,18 +63,21 @@ public class SimulationView extends JFrame implements KeyListener {
         JButton btnStatistics = new JButton("Statistics");
         btnStatistics.addActionListener(e -> {
             // Open statistics screen
-            try {
-                StatisticsScreen statisticsScreen = new StatisticsScreen();
-                statisticsScreen.show();
-            } catch (NullPointerException i) {
-                System.out.println("Statistics file not found");
-                new Alert(Alert.AlertType.ERROR, "Layout file not found").show();
-                i.printStackTrace();
-            } catch (IOException i) {
-                System.out.println("Something went wrong");
-                new Alert(Alert.AlertType.ERROR, "FXML not valid").show();
-                i.printStackTrace();
-            }
+            // this is needed to open a JavaFX window in swing (it should be opened on JavaFX thread)
+            Platform.runLater(() -> {
+                try {
+                    StatisticsScreen statisticsScreen = new StatisticsScreen();
+                    statisticsScreen.show();
+                } catch (NullPointerException i) {
+                    System.out.println("Statistics file not found");
+                    new Alert(Alert.AlertType.ERROR, "Layout file not found").show();
+                    i.printStackTrace();
+                } catch (IOException i) {
+                    System.out.println("Something went wrong");
+                    new Alert(Alert.AlertType.ERROR, "FXML not valid").show();
+                    i.printStackTrace();
+                }
+            });
         });
         contentPane.add(btnStatistics, BorderLayout.NORTH);
         //bottomPanel.add(btnStatistics);
